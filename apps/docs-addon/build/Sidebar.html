@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        color: #17211a;
+        font: 14px/1.45 Georgia, "Times New Roman", serif;
+        margin: 0;
+        padding: 16px;
+        background: linear-gradient(160deg, #f8f1df, #e8f0df);
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 12px;
+      }
+      textarea, select, button {
+        box-sizing: border-box;
+        width: 100%;
+      }
+      textarea, select {
+        border: 1px solid #b9b49f;
+        border-radius: 10px;
+        margin: 8px 0;
+        padding: 10px;
+      }
+      button {
+        background: #174c3c;
+        border: 0;
+        border-radius: 999px;
+        color: white;
+        cursor: pointer;
+        margin: 6px 0;
+        padding: 10px 12px;
+      }
+      .secondary {
+        background: #7a4b20;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid #ddd4bc;
+        border-radius: 14px;
+        margin: 12px 0;
+        padding: 12px;
+      }
+      .meta, .why {
+        color: #586257;
+        font-size: 12px;
+      }
+      .title {
+        font-weight: 700;
+      }
+      .status {
+        color: #466052;
+        min-height: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>EasyCite</h1>
+    <label for="providerMode">Version</label>
+    <select id="providerMode">
+      <option value="basic">EasyCite Basic</option>
+      <option value="ai">EasyCite AI</option>
+    </select>
+    <label for="openAIModel">OpenAI model</label>
+    <select id="openAIModel">
+      <option value="gpt-5.4-mini">gpt-5.4-mini</option>
+      <option value="gpt-5-mini">gpt-5-mini</option>
+      <option value="gpt-5.4">gpt-5.4</option>
+    </select>
+    <label for="openAIApiKey">OpenAI API key (only for AI mode)</label>
+    <textarea id="openAIApiKey" rows="2" placeholder="sk-..."></textarea>
+    <button class="secondary" onclick="saveAiSettings()">Save AI settings</button>
+    <label for="style">Citation style</label>
+    <select id="style">
+      <option value="apa">APA</option>
+      <option value="ieee">IEEE</option>
+      <option value="vancouver">Vancouver</option>
+    </select>
+    <label for="mode">Citation mode</label>
+    <select id="mode">
+      <option value="auto">Auto</option>
+      <option value="parenthetical">Parenthetical</option>
+      <option value="narrative">Narrative</option>
+      <option value="year-only">Year only</option>
+    </select>
+    <button onclick="findForContext()">Find for selected text</button>
+    <textarea id="query" rows="3" placeholder="Search by title, DOI, or keywords"></textarea>
+    <button class="secondary" onclick="manualSearch()">Search manually</button>
+    <div class="status" id="status"></div>
+    <div id="results"></div>
+
+    <script>
+      let papers = [];
+
+      google.script.run
+        .withSuccessHandler(applyAiSettings)
+        .withFailureHandler(showError)
+        .getAiSettings();
+
+      function setStatus(text) {
+        document.getElementById("status").textContent = text;
+      }
+
+      function saveAiSettings() {
+        google.script.run
+          .withSuccessHandler((settings) => {
+            applyAiSettings(settings);
+            setStatus(settings.providerMode === "ai" ? "EasyCite AI enabled." : "EasyCite Basic enabled.");
+          })
+          .withFailureHandler(showError)
+          .saveAiSettings(
+            document.getElementById("providerMode").value,
+            document.getElementById("openAIApiKey").value,
+            document.getElementById("openAIModel").value
+          );
+      }
+
+      function manualSearch() {
+        setStatus("Searching...");
+        google.script.run
+          .withSuccessHandler(renderResults)
+          .withFailureHandler(showError)
+          .searchManual(document.getElementById("query").value, 5);
+      }
+
+      function findForContext() {
+        setStatus("Searching selected context...");
+        google.script.run
+          .withSuccessHandler(renderResults)
+          .withFailureHandler(showError)
+          .searchContext(5);
+      }
+
+      function renderResults(response) {
+        papers = response.papers || [];
+        setStatus(papers.length ? `${papers.length} candidates found` : "No papers found. Try a more specific query.");
+        document.getElementById("results").innerHTML = papers.map((paper, index) => `
+          <article class="card">
+            <div class="title">${escapeHtml(paper.title)}</div>
+            <div class="meta">${escapeHtml(formatAuthors(paper.authors))} ${paper.year || ""} ${paper.venue ? " · " + escapeHtml(paper.venue) : ""}</div>
+            <p>${escapeHtml((paper.abstract || "No abstract available from source.").slice(0, 260))}</p>
+            <p class="why">${escapeHtml(paper.whyRelevant || "Relevant based on source search ranking.")}</p>
+            ${paper.url ? `<a href="${paper.url}" target="_blank">Open source</a>` : ""}
+            <button onclick="insertPaper(${index})">Insert citation</button>
+          </article>
+        `).join("");
+      }
+
+      function insertPaper(index) {
+        setStatus("Inserting citation and updating References...");
+        google.script.run
+          .withSuccessHandler(() => setStatus("Citation inserted. References updated."))
+          .withFailureHandler(showError)
+          .insertCitation(
+            papers[index],
+            document.getElementById("style").value,
+            document.getElementById("mode").value
+          );
+      }
+
+      function showError(error) {
+        setStatus(error.message || String(error));
+      }
+
+      function applyAiSettings(settings) {
+        document.getElementById("providerMode").value = settings.providerMode || "basic";
+        document.getElementById("openAIModel").value = settings.openAIModel || "gpt-5.4-mini";
+        document.getElementById("openAIApiKey").value = settings.openAIApiKey || "";
+      }
+
+      function formatAuthors(authors) {
+        if (!authors || authors.length === 0) return "Unknown author";
+        const first = authors.slice(0, 3).map((author) => author.displayName || author.family).join(", ");
+        return authors.length > 3 ? `${first}, et al.` : first;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+    </script>
+  </body>
+</html>

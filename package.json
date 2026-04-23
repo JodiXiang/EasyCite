@@ -1,0 +1,30 @@
+{
+  "name": "citepilot",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Lightweight AI citation copilot MVP for Google Docs.",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev -w apps/api",
+    "build": "npm run build -w packages/citation-core && npm run build -w apps/api && npm run build -w apps/docs-addon",
+    "build:addon": "node scripts/build-addon.mjs",
+    "addon:configure": "node scripts/configure-addon.mjs",
+    "addon:deploy": "npm run build && npm run build:addon && npm run push -w apps/docs-addon",
+    "addon:login": "clasp login",
+    "addon:open": "npm run open -w apps/docs-addon",
+    "demo:api": "node scripts/demo-api.mjs",
+    "typecheck": "npm run typecheck --workspaces",
+    "lint": "npm run lint --workspaces"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.0.6-alpha",
+    "typescript": "^5.8.3"
+  }
+}
