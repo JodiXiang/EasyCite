@@ -1,5 +1,5 @@
 "use strict";
-const DEFAULT_API_BASE_URL = "https://maybe-simulation-contest-springs.trycloudflare.com";
+const DEFAULT_API_BASE_URL = "https://easy-cite-api.vercel.app";
 const REFERENCES_START = "[CITEPILOT_REFERENCES_START]";
 const REFERENCES_END = "[CITEPILOT_REFERENCES_END]";
 function onOpen() {

@@ -1,6 +1,6 @@
 import "dotenv/config";
-import app from "../apps/api/src/app.js";
-import { initializeDatabase } from "../apps/api/src/services/db.js";
+import app from "../apps/api/dist/app.js";
+import { initializeDatabase } from "../apps/api/dist/services/db.js";
 
 await initializeDatabase();
 
