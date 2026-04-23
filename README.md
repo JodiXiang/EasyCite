@@ -13,6 +13,7 @@ Start here:
 - Demo runbook: `docs/RUNBOOK.md`
 - Short Google Docs setup: `docs/GOOGLE_DOCS_QUICKSTART.md`
 - Render deploy guide: `docs/RENDER_DEPLOY.md`
+- Supabase setup: `docs/SUPABASE_SETUP.md`
 - API skeleton: `apps/api`
 - Google Docs add-on skeleton: `apps/docs-addon`
 - Shared citation utilities: `packages/citation-core`

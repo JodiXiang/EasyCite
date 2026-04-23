@@ -23,7 +23,7 @@
   "engines": {
     "node": ">=20"
   },
-  "devDependencies": {
+  "dependencies": {
     "@google/clasp": "^3.0.6-alpha",
     "typescript": "^5.8.3"
   }

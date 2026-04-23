@@ -12,19 +12,19 @@ const citationSchema = z.object({
 
 export const documentsRouter = Router();
 
-documentsRouter.post("/:documentId/citations", (req, res, next) => {
+documentsRouter.post("/:documentId/citations", async (req, res, next) => {
   try {
     const { documentId } = req.params;
     const body = citationSchema.parse(req.body);
     const style = body.style as CitationStyle;
     const mode = body.mode as CitationMode | undefined;
-    const order = getNextCitationOrder(documentId, body.paper);
+    const order = await getNextCitationOrder(documentId, body.paper);
     const insertedText = formatInTextCitation(body.paper, style, order, {
       mode,
       contextText: body.contextText
     });
-    const citation = addCitation(documentId, body.paper, style, insertedText, order, mode);
-    const bibliography = getBibliography(documentId, style);
+    const citation = await addCitation(documentId, body.paper, style, insertedText, order, mode);
+    const bibliography = await getBibliography(documentId, style);
 
     res.json({ citation, insertedText, bibliography });
   } catch (error) {
@@ -32,9 +32,13 @@ documentsRouter.post("/:documentId/citations", (req, res, next) => {
   }
 });
 
-documentsRouter.get("/:documentId/bibliography", (req, res) => {
+documentsRouter.get("/:documentId/bibliography", async (req, res, next) => {
   const style = req.query.style === "ieee" || req.query.style === "vancouver" ? req.query.style : "apa";
-  res.json({ bibliography: getBibliography(req.params.documentId, style) });
+  try {
+    res.json({ bibliography: await getBibliography(req.params.documentId, style) });
+  } catch (error) {
+    next(error);
+  }
 });
 
 documentsRouter.post("/:documentId/reformat", (_req, res) => {
