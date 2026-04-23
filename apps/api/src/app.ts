@@ -15,4 +15,12 @@ app.get("/health", (_req, res) => {
 app.use("/api/search", searchRouter);
 app.use("/api/documents", documentsRouter);
 
+app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("Unhandled request error", error);
+  res.status(500).json({
+    ok: false,
+    error: error instanceof Error ? error.message : "Unknown server error"
+  });
+});
+
 export default app;
