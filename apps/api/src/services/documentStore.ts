@@ -6,7 +6,7 @@ import {
   type CitationStyle,
   type DocumentCitation,
   type Paper
-} from "@citepilot/citation-core";
+} from "../lib/citationCore.js";
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";

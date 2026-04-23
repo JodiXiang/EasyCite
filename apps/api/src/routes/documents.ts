@@ -1,4 +1,4 @@
-import { formatInTextCitation, type CitationMode, type CitationStyle, type Paper } from "@citepilot/citation-core";
+import { formatInTextCitation, type CitationMode, type CitationStyle, type Paper } from "../lib/citationCore.js";
 import { Router } from "express";
 import { z } from "zod";
 import { addCitation, getBibliography, getNextCitationOrder } from "../services/documentStore.js";

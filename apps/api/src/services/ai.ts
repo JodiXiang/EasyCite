@@ -1,4 +1,4 @@
-import type { Paper } from "@citepilot/citation-core";
+import type { Paper } from "../lib/citationCore.js";
 
 type AiSearchInput = {
   query?: string;
@@ -73,7 +73,7 @@ export async function rerankPapersWithAi(input: AiSearchInput, papers: Paper[]):
         papers: papers.map((paper) => ({
           canonicalKey: paper.canonicalKey,
           title: paper.title,
-          authors: paper.authors.map((author) => author.displayName || author.family).join(", "),
+          authors: paper.authors.map((author: Paper["authors"][number]) => author.displayName || author.family).join(", "),
           year: paper.year,
           venue: paper.venue,
           abstract: paper.abstract,

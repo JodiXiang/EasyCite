@@ -1,4 +1,4 @@
-import { canonicalPaperKey, normalizeDoi, type Paper, type ProviderMode } from "@citepilot/citation-core";
+import { canonicalPaperKey, normalizeDoi, type Paper, type ProviderMode } from "../lib/citationCore.js";
 import { rerankPapersWithAi, rewriteQueriesWithAi } from "./ai.js";
 
 type ContextSearchInput = {
