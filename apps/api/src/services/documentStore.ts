@@ -10,7 +10,7 @@ import {
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { getPool, hasDatabaseUrl } from "./db.js";
+import { getPool, hasDatabaseUrl, initializeDatabase } from "./db.js";
 
 type DocumentState = {
   papers: Map<string, Paper>;
@@ -118,6 +118,7 @@ function saveToDisk() {
 }
 
 async function getNextCitationOrderFromDb(documentId: string, paper: Paper): Promise<number> {
+  await initializeDatabase();
   const pool = getPool();
   if (!pool) throw new Error("Database pool is not available.");
 
@@ -159,6 +160,7 @@ async function addCitationToDb(
   citationNumber?: number,
   mode?: CitationMode
 ): Promise<DocumentCitation> {
+  await initializeDatabase();
   const pool = getPool();
   if (!pool) throw new Error("Database pool is not available.");
 
@@ -252,6 +254,7 @@ async function addCitationToDb(
 }
 
 async function getBibliographyFromDb(documentId: string, style: CitationStyle): Promise<BibliographyEntry[]> {
+  await initializeDatabase();
   const pool = getPool();
   if (!pool) throw new Error("Database pool is not available.");
 
